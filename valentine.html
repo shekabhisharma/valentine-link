@@ -200,18 +200,22 @@
   </div>
 
   <script>
-    const heartsEl = document.getElementById("hearts");
-    const overlay = document.getElementById("overlay");
-    const yesBtn = document.getElementById("yesBtn");
-    const noBtn = document.getElementById("noBtn");
-    const btnRow = document.getElementById("btnRow");
-    const closeOverlay = document.getElementById("closeOverlay");
-    const moreHearts = document.getElementById("moreHearts");
+  (function () {
+    function $(id) { return document.getElementById(id); }
 
-    const modalPhoto = document.getElementById("modalPhoto");
-    const ourPhoto = document.getElementById("ourPhoto");
+    const overlay = $("overlay");
+    const yesBtn = $("yesBtn");
+    const noBtn = $("noBtn");
+    const btnRow = $("btnRow");
+    const closeOverlay = $("closeOverlay");
+    const moreHearts = $("moreHearts");
+
+    const heartsEl = $("hearts");
+    const modalPhoto = $("modalPhoto");
+    const ourPhoto = $("ourPhoto");
 
     function spawnHeartBurst(count = 22) {
+      if (!heartsEl) return;
       const w = window.innerWidth;
       for (let i = 0; i < count; i++) {
         const h = document.createElement("div");
@@ -219,17 +223,12 @@
         const size = 10 + Math.random() * 18;
         h.style.width = size + "px";
         h.style.height = size + "px";
-
-        const x = Math.random() * w;
-        const duration = 2.8 + Math.random() * 2.4;
-
-        h.style.left = x + "px";
+        h.style.left = (Math.random() * w) + "px";
         h.style.bottom = (-30 - Math.random() * 60) + "px";
-        h.style.animationDuration = duration + "s";
+        h.style.animationDuration = (2.8 + Math.random() * 2.4) + "s";
         h.style.filter = `blur(${Math.random() * 0.6}px)`;
-
         heartsEl.appendChild(h);
-        setTimeout(() => h.remove(), (duration * 1000) + 200);
+        setTimeout(() => h.remove(), 4000);
       }
     }
 
@@ -244,8 +243,22 @@
       gentleTimer = null;
     }
 
-    // Playful "No" dodge
+    function showOverlay() {
+      if (!overlay) return;
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+
+    function hideOverlay() {
+      if (!overlay) return;
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      stopGentleHearts();
+    }
+
+    // No-button dodge (optional)
     function moveNoButton() {
+      if (!btnRow || !noBtn) return;
       const rect = btnRow.getBoundingClientRect();
       const btnRect = noBtn.getBoundingClientRect();
       const maxX = rect.width - btnRect.width;
@@ -256,35 +269,38 @@
       noBtn.style.left = x + "px";
       noBtn.style.top = y + "px";
     }
-    noBtn.addEventListener("mouseenter", moveNoButton);
-    noBtn.addEventListener("touchstart", () => moveNoButton(), { passive: true });
-    noBtn.addEventListener("click", () => { spawnHeartBurst(10); moveNoButton(); });
 
-    // YES: show overlay + load photo from repo
-    yesBtn.addEventListener("click", () => {
-      // IMPORTANT: image file must exist at repo root as "our.jpg"
-      ourPhoto.src = "./picture.jpeg";
-      ourPhoto.onload = () => { modalPhoto.style.display = "block"; };
-      ourPhoto.onerror = () => {
-        modalPhoto.style.display = "none";
-        alert("Couldn't load the image. Make sure it's named 'picture.jpg' in the repo root.");
-      };
+    // Attach handlers safely
+    if (noBtn) {
+      noBtn.addEventListener("mouseenter", moveNoButton);
+      noBtn.addEventListener("touchstart", moveNoButton, { passive: true });
+      noBtn.addEventListener("click", () => { spawnHeartBurst(10); moveNoButton(); });
+    }
 
-      overlay.classList.add("show");
-      overlay.setAttribute("aria-hidden", "false");
-      spawnHeartBurst(40);
-      startGentleHearts();
-    });
+    if (yesBtn) {
+      yesBtn.addEventListener("click", () => {
+        // 1) Show overlay immediately
+        showOverlay();
+        spawnHeartBurst(40);
+        startGentleHearts();
 
-    closeOverlay.addEventListener("click", () => {
-      overlay.classList.remove("show");
-      overlay.setAttribute("aria-hidden", "true");
-      stopGentleHearts();
-    });
+        // 2) Load photo from GitHub repo
+        // Ensure this works:
+        // https://shekabhisharma.github.io/valentine-link/picture.jpeg
+        if (ourPhoto) {
+          ourPhoto.src = "./picture.jpeg";   // <-- UPDATED NAME
+          ourPhoto.onload = () => { if (modalPhoto) modalPhoto.style.display = "block"; };
+          ourPhoto.onerror = () => {
+            if (modalPhoto) modalPhoto.style.display = "none";
+            console.warn("Image failed to load. Check filename/path: picture.jpeg");
+          };
+        }
+      });
+    }
 
-    moreHearts.addEventListener("click", () => spawnHeartBurst(60));
+    if (closeOverlay) closeOverlay.addEventListener("click", hideOverlay);
+    if (moreHearts) moreHearts.addEventListener("click", () => spawnHeartBurst(60));
 
     setTimeout(() => spawnHeartBurst(18), 350);
-  </script>
-</body>
-</html>
+  })();
+</script>
