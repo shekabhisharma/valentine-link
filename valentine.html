@@ -15,6 +15,20 @@
       --shadow: 0 18px 60px rgba(0,0,0,.25);
       --radius: 22px;
     }
+      .modalPhoto{
+      width:min(340px, 78vw);
+      margin: 10px auto 8px;
+      border-radius: 22px;
+      overflow:hidden;
+      border: 6px solid rgba(255,255,255,.75);
+      box-shadow: 0 18px 50px rgba(0,0,0,.22);
+    }
+      .modalPhoto img{
+      width:100%;
+      height:auto;
+      display:block;
+      object-fit:cover;
+    }
 
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -79,15 +93,15 @@
     }
 
     .card{
-      width:min(920px, 100%);
+      width:min(760px, 100%);
       background: var(--card);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
       border: 1px solid rgba(255,255,255,.6);
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-    }
+      display:block;
+     }
+
 
     @media (max-width: 860px){
       body{overflow:auto}
@@ -316,11 +330,6 @@
         </div>
       </div>
 
-      <div class="right">
-        <div class="photoWrap" aria-label="Our photo">
-          <img id="ourPhoto" alt="Our picture" />
-        </div>
-      </div>
     </section>
   </main>
 
@@ -328,6 +337,10 @@
   <div class="overlay" id="overlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Valentine result">
       <div class="bigHeart" aria-hidden="true"></div>
+      <div class="modalPhoto">
+        <img id="ourPhoto" alt="Our picture" />
+      </div>
+
       <h2>You said YES! 💘</h2>
       <p>
         You’re my favorite person, my safe place, and my best adventure.
@@ -348,7 +361,7 @@
 
     // Inject embedded base64 safely (kept as a template token replaced below)
     const photoEl = document.getElementById("ourPhoto");
-    photoEl.src = embeddedPhoto;
+    
 
     const heartsEl = document.getElementById("hearts");
     const overlay = document.getElementById("overlay");
@@ -420,11 +433,16 @@
     });
 
     yesBtn.addEventListener("click", () => {
+      // Put your base64 string here (same one you already used)
+      const b64 = "PASTE_YOUR_BASE64_HERE";
+      document.getElementById("ourPhoto").src = "data:image/jpeg;base64," + b64;
+    
       overlay.classList.add("show");
       overlay.setAttribute("aria-hidden", "false");
       spawnHeartBurst(40);
       startGentleHearts();
     });
+
 
     closeOverlay.addEventListener("click", () => {
       overlay.classList.remove("show");
